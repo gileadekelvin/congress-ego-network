@@ -3,7 +3,7 @@
 #' @param id Deputies's id
 #' @param rowid current row id of interation
 #' @param total total of deputies
-#' @return Dataframe informações de id e nome civil.
+#' @return Dataframe with info about deputies
 #' @examples
 #' deputy <- fetch_deputy(id)
 fetch_deputy <- function(id, rowid = 1, total = 1) {
