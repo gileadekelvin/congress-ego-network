@@ -24,6 +24,7 @@ Source: https://dadosabertos.camara.leg.br/api/v2/deputados?idLegislatura=55
 ### **propositions_2017_2018.csv**
 
 List of basic information on draft laws, resolutions, provisional measures, amendments, opinions and all other types of proposals in the Chamber of Deputies. All of these proposals were presented or had some change of situation in the period between January 1, 2017 and December 31, 2018.
+Source: https://dadosabertos.camara.leg.br/api/v2/proposicoes?dataInicio=2017-01-01&dataFim=2018-12-31&ordem=ASC&ordenarPor=id&pagina=1&itens=100
 
 **Columns**
 - **page**: API page returned by Chamber of Deputies site,
@@ -33,4 +34,15 @@ List of basic information on draft laws, resolutions, provisional measures, amen
 - **number**: number of proposition. (can be combined with type code and year to get a proposition's title)
 - **year**: year of proposition
 - **summary**: Brief description of the main points of the proposition. Provided by the Chamber.
+
+### **authors_propositions_2017_2018**
+
+Authors of the proposals that passed through the Chamber of Deputies between 2017 and 2018.
+Source: https://dadosabertos.camara.leg.br/api/v2/proposicoes/<id_proposition>/autores
+**Columns**
+- **id_proposition**: Unique id of proposition
+- **id_deputy**: Unique id of deputy (can be NA returned by API)    
+- **name**: Name of deputy
+- **cod_type**: Type of author
+- **type**: Name of the type of the author
 
