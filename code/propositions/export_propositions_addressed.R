@@ -1,6 +1,6 @@
 library(tidyverse)
 library(here)
-source(here::here("code/co_authors/fetch_propositions_by_date.R"))
+source(here::here("code/propositions/fetch_propositions_by_date.R"))
 
 if(!require(optparse)){
   install.packages("optparse")
