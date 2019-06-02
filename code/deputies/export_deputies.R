@@ -31,6 +31,6 @@ message("Downloading data...")
 deputies <- fetch_deputies_by_legislature(leg)
 
 message(paste0("Writing csv: ", saida))
-write.csv(deputies, saida, row.names = FALSE)
+write_csv(deputies, saida)
 
 message("Done!")
