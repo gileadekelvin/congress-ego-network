@@ -39,6 +39,7 @@ Source: https://dadosabertos.camara.leg.br/api/v2/proposicoes?dataInicio=2017-01
 
 Authors of the proposals that passed through the Chamber of Deputies between 2017 and 2018.
 Source: https://dadosabertos.camara.leg.br/api/v2/proposicoes/<id_proposition>/autores
+
 **Columns**
 - **id_proposition**: Unique id of proposition
 - **id_deputy**: Unique id of deputy (can be NA returned by API)    
@@ -46,3 +47,14 @@ Source: https://dadosabertos.camara.leg.br/api/v2/proposicoes/<id_proposition>/a
 - **cod_type**: Type of author
 - **type**: Name of the type of the author
 
+### **revenue_candidates_deputy_2018.csv**
+
+List of candidates for federal deputy in 2018 and how much they received from the party.
+
+**Columns**
+- **cpf_candidate**: cpf of the candidate
+- **name**: name of the candidate
+- **post**: Only "Deputado Federal" (federal deputy)
+- **party**: party of the candidate
+- **uf**: uf of the candidate
+- **received_from_party**: total of money received from the party in 2018.
