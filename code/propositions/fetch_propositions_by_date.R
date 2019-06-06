@@ -9,7 +9,7 @@
 #' @return Dataframe with info about propositions
 #' page (API), id_proposition, initials_type, cod_type, number, year, summary
 #' @examples
-#' propositions <- fetch_propositions_by_page(1, "2017-01-01", "2018-12-31", 632)
+#' propositions <- fetch_tramited_propositions("2017-01-01", "2018-12-31")
 fetch_tramited_propositions <- function(initial_date = "2017-01-01", final_date = "2018-12-31") {
   library(tidyverse)
   library(RCurl)

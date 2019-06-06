@@ -58,3 +58,15 @@ List of candidates for federal deputy in 2018 and how much they received from th
 - **party**: party of the candidate
 - **uf**: uf of the candidate
 - **received_from_party**: total of money received from the party in 2018.
+
+### **mandates.csv**
+
+List of all deputies that participated in at least one legislature considering all legislatures provided by the API of the Chamber of Deputies. This data can be used to determinate the mandates of the deputies.
+
+**Columns**
+- **page**: API page returned by Chamber of Deputies site
+- **id_deputy**: Unique id of the deputy
+- **idLegislature**: Legislature's id that the deputy participated
+- **name**: name of the candidate
+- **party**: party of the candidate
+- **uf**: uf of the candidate
