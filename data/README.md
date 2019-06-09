@@ -70,3 +70,16 @@ List of all deputies that participated in at least one legislature considering a
 - **name**: name of the candidate
 - **party**: party of the candidate
 - **uf**: uf of the candidate
+
+### **patrimony_candidates_deputy_2018.csv**
+
+List of candidates for federal deputy in 2018 and how much they declared as patrimony.
+
+**Columns**
+- **year**: year of declaration of patrimony
+- **uf**: uf of the candidate
+- **cpf**: cpf of the candidate
+- **name**: name of the candidate
+- **ocupation**: ocupation of the candidate
+- **education**: degree of education
+- **patrimony**: patrimony declared in REAIS (R$)
