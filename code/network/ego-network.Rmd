@@ -1,0 +1,176 @@
+---
+title: "Ego Networks"
+author: "Gileade"
+date: "6/17/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(here)
+
+library(ggraph)
+library(igraph)
+library(tidygraph)
+```
+
+```{r}
+deputados <- read_csv(here("data/deputies_leg55.csv"))
+```
+
+Carregando autores de proposições 2017-2018 e filtrando aqueles com valor igual a NA
+```{r}
+autores <- read_csv(here("data/authors_propositions_2017_2018.csv")) %>% 
+  filter(!is.na(id_deputy))
+```
+
+Investigar autores com id_deputy = NA
+```{r}
+autores_id_na <- read_csv(here("data/authors_propositions_2017_2018.csv")) %>% 
+  filter(is.na(id_deputy))
+```
+
+Atribuindo pesos para as relações entre autores de uma mesma proposição. 1 / nº de autores na proposição. Se existem 2 autores então o peso é de 1 / 2 = 0.5. Foram removidos os autores únicos de proposições.
+```{r}
+autores_peso <- autores %>% 
+  group_by(id_proposition) %>% 
+  mutate(n_autores = n()) %>% 
+  ungroup() %>% 
+  mutate(value = 1 / n_autores) %>% 
+  filter(n_autores > 1) %>% 
+  select(id_proposition, id_deputy, name, value)
+```
+
+```{r}
+set.seed(123456)
+
+id_sample <- autores_peso %>% 
+  distinct(id_proposition) %>% 
+  sample_n(50) %>% 
+  pull(id_proposition)
+
+autores_peso <- autores_peso %>% 
+  filter(id_proposition %in% id_sample)
+```
+
+```{r}
+autores_summary <- autores_peso %>% 
+  left_join(autores_peso, by = c("id_proposition")) %>% 
+  filter(id_deputy.x != id_deputy.y) %>% 
+  rowwise() %>% ## camada para remover direção (rows com duplicação)
+  mutate(source = min(id_deputy.x, id_deputy.y),
+         target = max(id_deputy.x, id_deputy.y)) %>% 
+  ungroup() %>% 
+  distinct(source, target, .keep_all = TRUE) %>% 
+  select(-c(source, target))
+```
+
+```{r}
+links <- autores_summary %>% 
+  group_by(id_deputy.x, id_deputy.y) %>% 
+  summarise(name_x = first(name.x),
+            name_y = first(name.y),
+            value = sum(value.y)) %>% 
+  ungroup() %>% 
+  rename(id_deputy_x = id_deputy.x, id_deputy_y = id_deputy.y, ) %>% 
+  mutate(id_ext_x = id_deputy_x, id_ext_y = id_deputy_y)
+```
+
+```{r}
+nodes <- links %>% 
+  distinct(id_deputy_x, name_x) %>% 
+  rename(id_deputy = id_deputy_x,
+         name = name_x) %>% 
+  rbind(links %>% 
+          distinct(id_deputy_y, name_y) %>% 
+          rename(id_deputy = id_deputy_y,
+                 name = name_y)) %>% 
+  distinct(id_deputy, .keep_all = TRUE) %>%
+  mutate(id_ext = id_deputy) %>% 
+  arrange(name) %>% 
+  left_join(deputados %>% select(id, party_name), by = c("id_deputy" = "id")) %>% 
+  tibble::rowid_to_column(var = "index") %>% 
+  select(id_deputy, name, id_ext, party_name, index)
+```
+
+```{r}
+gg <- graph_from_data_frame(links, directed = FALSE, vertices = nodes)
+
+g <- gg %>% 
+  as_tbl_graph()
+```
+
+```{r}
+g %>% 
+  activate(nodes) %>% 
+  mutate(
+    brokerage = tidygraph::map_local(
+      order = 1, 
+      mindist = 1, 
+      .f = function(neighborhood, graph, node, ...) {
+        party1 <- graph %>% 
+          activate(nodes) %>% 
+          filter(index == node) %>% 
+          pull(party_name)
+        
+        vizinhos <- neighborhood
+        
+        neighborhood %>%
+          activate(nodes) %>%
+          mutate(
+            brokerage_l1 = tidygraph::map_local(
+              order = 1,
+              mindist = 1,
+              .f = function(neighborhood, graph, node, ..1 = party1, ..2 = vizinhos, ...) {
+                party2 <- graph %>%
+                  activate(nodes) %>%
+                  filter(index == node) %>%
+                  pull(party_name)
+                
+                node2 <- node
+                
+                vizinhos %>% 
+                  activate(nodes) %>% 
+                  mutate(
+                    brokerage_l2 = tidygraph::map_local(
+                      order = 1,
+                      mindist = 1,
+                      .f = function(neighborhood, graph, node, ..1 = party1, ..2 = node2, ..3 = party2) {
+                          party3 <- graph %>%
+                            activate(nodes) %>%
+                            filter(index == node) %>%
+                            pull(party_name)
+                          print(node)
+                          print(node2)
+                          b <- graph %>%
+                            activate(nodes) %>%
+                            filter(index == node) %>%
+                            filter(!node_is_adjacent(node2) && node != node2)
+                          
+                          # print(b)
+                      }
+                    )
+                  )
+                
+                
+                print(party2)
+                
+                return(party2)
+              }
+            )
+          )
+        
+        return(party1)
+      }
+      )
+  ) %>% 
+  as_tibble(active = "nodes") %>% View()
+```
+
+
+
+
