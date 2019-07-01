@@ -46,7 +46,7 @@ autores_peso <- autores %>%
 ```
 
 ```{r}
-set.seed(123456)
+set.seed(123)
 
 id_sample <- autores_peso %>% 
   distinct(id_proposition) %>% 
@@ -59,18 +59,19 @@ autores_peso <- autores_peso %>%
 
 ```{r}
 autores_summary <- autores_peso %>% 
-  left_join(autores_peso, by = c("id_proposition")) %>% 
-  filter(id_deputy.x != id_deputy.y) %>% 
-  rowwise() %>% ## camada para remover direção (rows com duplicação)
-  mutate(source = min(id_deputy.x, id_deputy.y),
+  dplyr::left_join(autores_peso, by = c("id_proposition")) %>% 
+  dplyr::filter(id_deputy.x != id_deputy.y) %>% 
+  dplyr::rowwise() %>% ## camada para remover direção (rows com duplicação)
+  dplyr::mutate(source = min(id_deputy.x, id_deputy.y),
          target = max(id_deputy.x, id_deputy.y)) %>% 
-  ungroup() %>% 
-  distinct(source, target, .keep_all = TRUE) %>% 
-  select(-c(source, target))
+  dplyr::ungroup() %>% 
+  dplyr::distinct(source, target, .keep_all = TRUE) %>% 
+  dplyr::select(-c(source, target))
 ```
 
 ```{r}
 links <- autores_summary %>% 
+  filter(value.x > 0.1) %>% 
   group_by(id_deputy.x, id_deputy.y) %>% 
   summarise(name_x = first(name.x),
             name_y = first(name.y),
@@ -105,7 +106,7 @@ g <- gg %>%
 ```
 
 ```{r}
-g %>% 
+res <- g %>% 
   activate(nodes) %>% 
   mutate(
     brokerage = tidygraph::map_local(
@@ -117,60 +118,44 @@ g %>%
           filter(index == node) %>% 
           pull(party_name)
         
+        node1 <- node
+        
         vizinhos <- neighborhood
         
-        neighborhood %>%
+        a <- graph %>%
           activate(nodes) %>%
           mutate(
             brokerage_l1 = tidygraph::map_local(
               order = 1,
               mindist = 1,
-              .f = function(neighborhood, graph, node, ..1 = party1, ..2 = vizinhos, ...) {
-                party2 <- graph %>%
-                  activate(nodes) %>%
-                  filter(index == node) %>%
-                  pull(party_name)
-                
-                node2 <- node
-                
-                vizinhos %>% 
-                  activate(nodes) %>% 
-                  mutate(
-                    brokerage_l2 = tidygraph::map_local(
-                      order = 1,
-                      mindist = 1,
-                      .f = function(neighborhood, graph, node, ..1 = party1, ..2 = node2, ..3 = party2) {
-                          party3 <- graph %>%
-                            activate(nodes) %>%
-                            filter(index == node) %>%
-                            pull(party_name)
-                          print(node)
-                          print(node2)
-                          b <- graph %>%
-                            activate(nodes) %>%
-                            filter(index == node) %>%
-                            filter(!node_is_adjacent(node2) && node != node2)
-                          
-                          # print(b)
-                      }
-                    )
-                  )
+              .f = function(neighborhood, graph, node, ..1 = party1, ..2 = node1, ..3 = vizinhos) {
+                print(node)
+                # print(neighborhood %>% activate(nodes))
+                # print(paste("node1", node1, "-node2", node))
                 
                 
-                print(party2)
-                
-                return(party2)
+                return(tibble(node))
               }
             )
-          )
+          ) %>% pull(brokerage_l1)
         
-        return(party1)
+        return(a)
       }
       )
   ) %>% 
-  as_tibble(active = "nodes") %>% View()
+  as_tibble(active = "nodes")
+
+res %>% unnest(brokerage) %>% View()
 ```
 
+```{r}
+library(intergraph)
+library(sna)
+
+g2 <- asNetwork(gg)
+
+brokerage(g2, cl=get.vertex.attribute(g2, "party_name"))$raw.nli
+```
 
 
 
